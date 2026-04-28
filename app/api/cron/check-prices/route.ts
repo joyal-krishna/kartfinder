@@ -83,4 +83,4 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({ checked: products.length, updated, alertsSent })
-}
+}// fix 
