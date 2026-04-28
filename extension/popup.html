@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kart Finder</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      width: 320px;
+      min-height: 200px;
+      background: #fff;
+      color: #111;
+      font-size: 14px;
+    }
+
+    .header {
+      background: #f97316;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .header-sub { font-size: 11px; color: rgba(255,255,255,0.8); }
+
+    .body { padding: 14px 16px; }
+
+    /* Auth screen */
+    #authScreen label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; margin-top: 10px; }
+    #authScreen input {
+      width: 100%; padding: 8px 10px; border: 1px solid #e0e0e0;
+      border-radius: 8px; font-size: 13px; outline: none;
+    }
+    #authScreen input:focus { border-color: #f97316; }
+    .btn {
+      width: 100%; padding: 9px; background: #f97316; color: #fff;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; margin-top: 12px;
+    }
+    .btn:hover { background: #ea580c; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-outline {
+      background: transparent; color: #f97316;
+      border: 1px solid #f97316; margin-top: 6px;
+    }
+    .btn-outline:hover { background: #fff7ed; }
+    .error { color: #dc2626; font-size: 12px; margin-top: 6px; }
+    .link { font-size: 12px; color: #f97316; text-decoration: none; text-align: center; display: block; margin-top: 8px; }
+
+    /* Product screen */
+    .product-img {
+      width: 64px; height: 64px; border-radius: 8px; background: #f5f5f5;
+      object-fit: contain; flex-shrink: 0;
+    }
+    .product-img-placeholder {
+      width: 64px; height: 64px; border-radius: 8px; background: #f5f5f5;
+      display: flex; align-items: center; justify-content: center; font-size: 28px;
+    }
+    .product-info { flex: 1; min-width: 0; }
+    .product-row { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+    .product-name { font-size: 13px; font-weight: 500; line-height: 1.4; margin-bottom: 4px; }
+    .badge {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 10px; margin-bottom: 4px;
+    }
+    .badge-amazon { background: #fef3c7; color: #92400e; }
+    .badge-flipkart { background: #dbeafe; color: #1e40af; }
+    .badge-meesho { background: #fee2e2; color: #991b1b; }
+    .badge-other { background: #f3f4f6; color: #374151; }
+
+    .price-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .price { font-size: 18px; font-weight: 700; color: #111; }
+    .price-orig { font-size: 12px; color: #999; text-decoration: line-through; }
+    .discount { font-size: 11px; font-weight: 600; color: #16a34a; }
+
+    .field { margin-bottom: 10px; }
+    .field label { display: block; font-size: 11px; color: #777; margin-bottom: 3px; font-weight: 500; }
+    .field input, .field select {
+      width: 100%; padding: 7px 9px; border: 1px solid #e0e0e0;
+      border-radius: 7px; font-size: 13px; outline: none; background: #fff;
+    }
+    .field input:focus, .field select:focus { border-color: #f97316; }
+
+    .saved-msg {
+      text-align: center; padding: 20px;
+      display: none;
+    }
+    .saved-icon { font-size: 36px; margin-bottom: 8px; }
+    .saved-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .saved-sub { font-size: 12px; color: #777; }
+
+    .not-product {
+      text-align: center; padding: 20px; color: #777; font-size: 13px;
+    }
+
+    .user-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; margin-bottom: 8px; border-bottom: 1px solid #f3f4f6;
+    }
+    .user-email { font-size: 11px; color: #777; }
+    .signout { font-size: 11px; color: #f97316; background: none; border: none; cursor: pointer; }
+
+    .loading { text-align: center; padding: 30px; color: #999; font-size: 13px; }
+    .spinner {
+      width: 20px; height: 20px; border: 2px solid #f0f0f0;
+      border-top-color: #f97316; border-radius: 50%;
+      animation: spin 0.6s linear infinite; margin: 0 auto 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span>🛒</span>
+    <div>
+      <div class="header-title">Kart Finder</div>
+      <div class="header-sub">Save to your wishlist</div>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- Loading -->
+    <div id="loadingScreen" class="loading">
+      <div class="spinner"></div>
+      Loading...
+    </div>
+
+    <!-- Auth screen -->
+    <div id="authScreen" style="display:none">
+      <div style="font-size:13px;color:#555;margin-bottom:12px;">Sign in to save products to your Kart Finder wishlist.</div>
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@example.com" />
+      <label>Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••" />
+      <div id="authError" class="error"></div>
+      <button class="btn" id="loginBtn">Sign in</button>
+      <a href="https://kartfinder.app/auth/signup" target="_blank" class="link">Create free account →</a>
+    </div>
+
+    <!-- Not a product page -->
+    <div id="notProductScreen" style="display:none" class="not-product">
+      <div style="font-size:28px;margin-bottom:8px">🔍</div>
+      <p>Go to an Amazon, Flipkart, or Meesho product page to save it.</p>
+    </div>
+
+    <!-- Product save screen -->
+    <div id="productScreen" style="display:none">
+      <div class="user-row">
+        <span class="user-email" id="userEmail"></span>
+        <button class="signout" id="signoutBtn">Sign out</button>
+      </div>
+
+      <div class="product-row">
+        <div id="productImgWrap"></div>
+        <div class="product-info">
+          <div class="badge" id="platformBadge"></div>
+          <div class="product-name" id="productName"></div>
+        </div>
+      </div>
+
+      <div class="price-row">
+        <span class="price" id="productPrice"></span>
+        <span class="price-orig" id="productOrigPrice"></span>
+        <span class="discount" id="productDiscount"></span>
+      </div>
+
+      <div class="field">
+        <label>Save to wishlist</label>
+        <select id="wishlistSelect"></select>
+      </div>
+
+      <div class="field">
+        <label>Override price (optional)</label>
+        <input type="number" id="priceOverride" placeholder="₹ Enter price manually" />
+      </div>
+
+      <div id="saveError" class="error"></div>
+      <button class="btn" id="saveBtn">Save to Kart Finder</button>
+    </div>
+
+    <!-- Saved confirmation -->
+    <div id="savedScreen" class="saved-msg">
+      <div class="saved-icon">✅</div>
+      <div class="saved-title">Saved to your wishlist!</div>
+      <div class="saved-sub" id="savedTo"></div>
+      <a href="https://kartfinder.app/dashboard" target="_blank" class="link" style="margin-top:10px">View in Kart Finder →</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

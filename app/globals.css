@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body { @apply text-gray-900; }
+  
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 font-medium px-4 py-2 rounded-lg border border-gray-200 transition-colors duration-150;
+  }
+  .btn-ghost {
+    @apply hover:bg-gray-100 active:bg-gray-200 text-gray-600 font-medium px-3 py-2 rounded-lg transition-colors duration-150;
+  }
+  .card {
+    @apply bg-white rounded-xl border border-gray-100 shadow-sm;
+  }
+  .input {
+    @apply w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent text-sm bg-white;
+  }
+  .badge-amazon {
+    @apply bg-amber-50 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+  .badge-flipkart {
+    @apply bg-blue-50 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+  .badge-meesho {
+    @apply bg-red-50 text-red-700 text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+  .badge-other {
+    @apply bg-gray-100 text-gray-600 text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+}
