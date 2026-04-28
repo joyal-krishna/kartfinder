@@ -13,13 +13,15 @@ export default async function DashboardPage() {
     .eq('user_id', session!.user.id)
     .order('created_at', { ascending: false })
 
-  const allProducts = wishlists?.flatMap(w => w.products || []) ?? []
+  const allProducts = (wishlists ?? []).flatMap(
+    (w: Record<string, unknown>) => (w.products as Record<string, unknown>[]) || []
+  )
 
   const stats = {
-    totalValue: allProducts.reduce((s, p) => s + (p.current_price * p.quantity), 0),
-    totalItems: allProducts.reduce((s, p) => s + p.quantity, 0),
+    totalValue: allProducts.reduce((s, p) => s + ((p.current_price as number) * (p.quantity as number)), 0),
+    totalItems: allProducts.reduce((s, p) => s + (p.quantity as number), 0),
     wishlists: wishlists?.length ?? 0,
-    platforms: [...new Set(allProducts.map(p => p.platform))].length,
+    platforms: [...new Set(allProducts.map(p => p.platform as string))].length,
   }
 
   return (
@@ -28,15 +30,12 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold text-gray-900">My Dashboard</h1>
         <p className="text-gray-500 text-sm mt-1">All your wishlists and saved products</p>
       </div>
-
       <StatsBar stats={stats} />
-
       <div className="mt-8">
-        <AddProductForm wishlists={wishlists ?? []} />
+        <AddProductForm wishlists={(wishlists ?? []) as Parameters<typeof AddProductForm>[0]['wishlists']} />
       </div>
-
       <div className="mt-8">
-        <WishlistGrid wishlists={wishlists ?? []} />
+        <WishlistGrid wishlists={(wishlists ?? []) as Parameters<typeof WishlistGrid>[0]['wishlists']} />
       </div>
     </div>
   )
