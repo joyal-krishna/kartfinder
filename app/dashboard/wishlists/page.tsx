@@ -30,7 +30,7 @@ export default async function WishlistsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {wishlists.map(w => {
-            const products = (w.products || []) as Array<{ current_price: number; quantity: number; platform: string }>
+            const products = ((w as any).products || []) as any[] platform: string }>
             const total = products.reduce((s, p) => s + p.current_price * p.quantity, 0)
             const platforms = [...new Set(products.map(p => p.platform))]
             return (
