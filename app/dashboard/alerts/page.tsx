@@ -25,27 +25,18 @@ export default async function AlertsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {alerts.map(alert => (
-            <div key={alert.id} className="card p-4 flex items-center gap-4">
+          {alerts.map((alert, index) => (
+            <div key={index} className="card p-4 flex items-center gap-4">
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">{alert.product?.name}</p>
+                <p className="font-medium text-gray-900 truncate">{(alert.product as {name?: string})?.name}</p>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  Current: <strong>₹{alert.product?.current_price?.toLocaleString('en-IN')}</strong>
+                  Current: <strong>₹{(alert.product as {current_price?: number})?.current_price?.toLocaleString('en-IN')}</strong>
                   {' '}→ Target: <strong className="text-brand-600">₹{alert.target_price?.toLocaleString('en-IN')}</strong>
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                {alert.product?.current_price <= alert.target_price ? (
-                  <span className="bg-green-50 text-green-700 text-xs font-medium px-2 py-1 rounded-full">✓ Target reached</span>
-                ) : (
-                  <span className="bg-brand-50 text-brand-700 text-xs font-medium px-2 py-1 rounded-full">
-                    ↓ Need ₹{((alert.product?.current_price ?? 0) - alert.target_price).toLocaleString('en-IN')} drop
-                  </span>
-                )}
-                <span className={`text-xs px-2 py-1 rounded-full ${alert.is_active ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-                  {alert.is_active ? 'Active' : 'Paused'}
-                </span>
-              </div>
+              <span className={`text-xs px-2 py-1 rounded-full ${alert.is_active ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                {alert.is_active ? 'Active' : 'Paused'}
+              </span>
             </div>
           ))}
         </div>
