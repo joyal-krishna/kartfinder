@@ -14,14 +14,15 @@ export async function GET(req: Request) {
   const supabase = supabaseAdmin()
 
   // Get all active products (check up to 100 per run)
-  const { data: products } = await supabase
+  const { data: productsData } = await supabase
     .from('products')
     .select('*, profiles!user_id(email)')
     .not('url', 'is', null)
     .gt('current_price', 0)
     .limit(100)
 
-  if (!products || products.length === 0) return NextResponse.json({ checked: 0 })
+  const products = productsData ?? []
+  if (products.length === 0) return NextResponse.json({ checked: 0 })
   let updated = 0
   let alertsSent = 0
 
