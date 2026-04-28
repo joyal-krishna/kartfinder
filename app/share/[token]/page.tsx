@@ -14,7 +14,7 @@ export default async function SharedWishlistPage({ params }: { params: { token: 
 
   if (!wishlist) notFound()
 
-  const products = wishlist.products || []
+  const products = (wishlist as any).products || []
   const total = products.reduce((s: number, p: { current_price: number; quantity: number }) => s + p.current_price * p.quantity, 0)
   const owner = (wishlist as { profiles?: { full_name?: string } }).profiles?.full_name || 'Someone'
 
