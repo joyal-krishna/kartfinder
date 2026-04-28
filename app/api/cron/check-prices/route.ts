@@ -21,8 +21,7 @@ export async function GET(req: Request) {
     .gt('current_price', 0)
     .limit(100)
 
-  if (!products?.length) return NextResponse.json({ checked: 0 })
-
+  if (!products || products.length === 0) return NextResponse.json({ checked: 0 })
   let updated = 0
   let alertsSent = 0
 
