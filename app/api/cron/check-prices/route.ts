@@ -3,8 +3,6 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { scrapeProduct } from '@/lib/scraper'
 import { sendPriceDropAlert } from '@/lib/email'
 
-// Called by Vercel Cron or external cron service daily
-// Set up in vercel.json: { "crons": [{ "path": "/api/cron/check-prices", "schedule": "0 9 * * *" }] }
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -13,31 +11,29 @@ export async function GET(req: Request) {
 
   const supabase = supabaseAdmin()
 
-  // Get all active products (check up to 100 per run)
-  const { data: productsData } = await supabase
+  const { data } = await supabase
     .from('products')
-    .select('*, profiles!user_id(email)')
+    .select('id, name, url, platform, current_price, original_price, image_url, user_id')
     .not('url', 'is', null)
     .gt('current_price', 0)
     .limit(100)
 
-  const products = productsData ?? []
+  const products = data ?? []
   if (products.length === 0) return NextResponse.json({ checked: 0 })
+
   let updated = 0
   let alertsSent = 0
 
   for (const product of products) {
     try {
-      const scraped = await scrapeProduct(product.url)
+      const scraped = await scrapeProduct(product.url as string)
       if (!scraped.price || scraped.price <= 0) continue
 
       const newPrice = scraped.price
-      const oldPrice = product.current_price
+      const oldPrice = product.current_price as number
 
-      // Record price history
       await supabase.from('price_history').insert({ product_id: product.id, price: newPrice })
 
-      // Update product price if changed
       if (Math.abs(newPrice - oldPrice) > 0.5) {
         await supabase
           .from('products')
@@ -46,27 +42,31 @@ export async function GET(req: Request) {
         updated++
       }
 
-      // Check active alerts for this product
       if (newPrice < oldPrice) {
         const { data: alerts } = await supabase
           .from('price_alerts')
-          .select('*, profiles!user_id(email)')
+          .select('id, target_price, user_id')
           .eq('product_id', product.id)
           .eq('is_active', true)
           .lte('target_price', newPrice)
 
-        for (const alert of (alerts || [])) {
-          const email = (alert as { profiles?: { email?: string } }).profiles?.email
-          if (!email) continue
+        for (const alert of (alerts ?? [])) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', alert.user_id)
+            .single()
+
+          if (!profile?.email) continue
 
           await sendPriceDropAlert({
-            to: email,
-            productName: product.name,
+            to: profile.email,
+            productName: product.name as string,
             oldPrice,
             newPrice,
-            productUrl: product.url,
-            imageUrl: product.image_url || undefined,
-            platform: product.platform,
+            productUrl: product.url as string,
+            imageUrl: (product.image_url as string) || undefined,
+            platform: product.platform as string,
           })
 
           await supabase
